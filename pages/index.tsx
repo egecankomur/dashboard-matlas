@@ -24,7 +24,7 @@ export default function Login() {
       } else if (needsEmailVerification) {
         setError("Lütfen e-postanızı doğrulatın.");
       } else {
-        if (user?.roles.includes('admin')) {
+        if (user?.roles.includes('yonetici')) {
           router.push('/yonetici');
         } else {
           router.push('/personel');
