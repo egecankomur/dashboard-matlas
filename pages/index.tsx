@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSignInEmailPassword } from '@nhost/react';
+import { useSignInEmailPassword, useUserData } from '@nhost/react';
 import { useRouter } from 'next/router';
 import { Button, Input, Link, Card, CardBody, CardHeader, CardFooter } from "@nextui-org/react";
 
@@ -11,8 +11,9 @@ export default function Login() {
   const router = useRouter();
 
   const { signInEmailPassword } = useSignInEmailPassword();
+  const user = useUserData(); 
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -21,12 +22,16 @@ export default function Login() {
       if (error) {
         setError(error.message);
       } else if (needsEmailVerification) {
-        setError("Please verify your email address.");
+        setError("Lütfen e-postanızı doğrulatın.");
       } else {
-        router.push('/dashboard');
+        if (user?.roles.includes('admin')) {
+          router.push('/yonetici');
+        } else {
+          router.push('/personel');
+        }
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
+      setError("Bir hata oluştu lütfen yeniden deneyin.");
     } finally {
       setIsLoading(false);
     }
@@ -36,40 +41,34 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-400 to-purple-500 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col gap-1 items-center">
-          <h1 className="text-2xl font-bold">Login to Your Account</h1>
+          <h1 className="text-2xl font-bold">Giriş Yap</h1>
         </CardHeader>
         <CardBody>
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <Input
               isRequired
-              label="Email"
-              placeholder="Enter your email"
+              label="E-posta"
+              placeholder="E-Posta Adresiniz"
               type="email"
               value={email}
               onValueChange={setEmail}
             />
             <Input
               isRequired
-              label="Password"
-              placeholder="Enter your password"
+              label="Şifreniz"
+              placeholder="Şifrenizi giriniz"
               type="password"
               value={password}
               onValueChange={setPassword}
             />
             <Button color="primary" type="submit" isLoading={isLoading}>
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
             </Button>
           </form>
           {error && (
             <p className="text-danger mt-4 text-center">{error}</p>
           )}
         </CardBody>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm">
-            Don't have an account? {' '}
-            <Link href="/signup" className="text-primary">Sign up</Link>
-          </p>
-        </CardFooter>
       </Card>
     </div>
   );
